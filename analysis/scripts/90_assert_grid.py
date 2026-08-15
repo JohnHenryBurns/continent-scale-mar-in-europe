@@ -7,8 +7,8 @@ this is a hard gate: any CRS / transform / shape mismatch exits non-zero.
 
 Rasters are attributed to an AOI by path (``data/outputs/<aoi>/...``) or by
 filename prefix (``data/outputs/<aoi>_*.tif``) and checked against that AOI's
-grid. Rasters that match no known AOI are checked against --aoi and reported,
-since an unattributable output is itself a naming bug.
+grid. Rasters matching no known AOI are checked against --aoi and reported;
+an unattributable output is itself a naming bug.
 
 Exits 0 with a skip message when data/outputs holds no rasters yet.
 """
@@ -65,7 +65,7 @@ def main(aoi: str) -> int:
     grid_for(aoi)  # validates the active AOI definition itself
 
     # Interim rasters are gated too: 01_ingest.py snaps to the grid, and an
-    # ingest that drifts poisons every stage downstream of it.
+    # ingest that drifts off-grid carries the drift into every later stage.
     roots = [r for r in (paths.OUTPUTS, paths.INTERIM) if r.is_dir()]
     tifs = sorted({p for r in roots for p in r.rglob("*.tif")})  # sorted: determinism
     if not tifs:

@@ -3,10 +3,10 @@
     python analysis/tests/test_ingest.py
 
 The real inputs are large and sit behind registration, so none of them are in
-the repo and CI cannot download them. This builds tiny stand-ins with the same
-shape as the real thing — wrong CRS, wrong resolution, tiled coverage,
-categorical codes, features outside the AOI — runs the actual stage against a
-throwaway MAR_DATA_ROOT, and checks the promises the stage makes:
+the repo and CI cannot download them. This builds tiny stand-ins that share the
+awkward properties of the real inputs: wrong CRS, wrong resolution, tiled
+coverage, categorical codes, features outside the AOI. It runs the stage
+against a throwaway MAR_DATA_ROOT and checks that:
 
   * output rasters land on the AOI grid exactly (CRS, transform, shape)
   * categorical layers keep their class codes (nearest, never bilinear)
@@ -199,9 +199,9 @@ def main() -> int:
                     check("preferred DEM used, not the fallback",
                           band.count() > 0 and float(band.max()) < 1000,
                           f"max={float(band.max()) if band.count() else 'empty'}")
-                    # No tolerance here: the fixture tiles abut exactly, so a
-                    # single nodata cell means a seam along the tile join, and
-                    # a seam reads as a barrier in the L2 cost-distance.
+                    # The fixture tiles abut exactly, so a single nodata cell
+                    # means a seam along the tile join, and a seam reads as a
+                    # barrier in the L2 cost-distance.
                     check("DEM mosaic has no seam (100% valid)",
                           band.count() == band.size,
                           f"{band.size - band.count()} nodata cell(s) of {band.size}")

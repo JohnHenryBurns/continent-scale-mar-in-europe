@@ -5,10 +5,9 @@
     python 01_ingest.py --aoi dti --force
 
 Rasters are warped straight onto the AOI grid from config/grid.py, so the
-output transform and shape are the grid's by construction, not by luck.
-Vectors are reprojected to EPSG:3035 and clipped to the AOI bounds, staying
-vector — rasterising them needs the class-to-score mapping, which belongs to
-the layer stages, not here.
+output transform and shape match the grid exactly. Vectors are reprojected to
+EPSG:3035, clipped to the AOI bounds, and stay vector. Rasterising them needs
+the class-to-score mapping, which lives in the layer stages.
 
 Outputs land in data/interim/<aoi>/ with units in the filename, plus a
 quicklook per layer in data/outputs/quicklooks/.
@@ -23,9 +22,9 @@ import os
 import sys
 from pathlib import Path
 
-# GDAL stamps gpkg_contents.last_change with the wall clock, which would make
-# every GeoPackage write differ from the last. Pin it: identical inputs must
-# produce byte-identical outputs (CLAUDE.md). Set before GDAL is imported.
+# GDAL stamps gpkg_contents.last_change with the wall clock, so every write
+# would differ from the last. Pin it so identical inputs produce byte-identical
+# outputs (CLAUDE.md). Must be set before GDAL is imported.
 os.environ.setdefault("OGR_CURRENT_DATE", "1970-01-01T00:00:00.000Z")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -35,8 +34,8 @@ from config.grid import CRS, aoi_names, grid_for  # noqa: E402
 
 # Layer registry. `source` keys match 00_fetch_data.py; `patterns` are globs
 # under data/raw/<source>/. Continuous rasters resample bilinear, categorical
-# ones nearest — resampling a land-cover code with bilinear invents classes
-# that do not exist.
+# ones nearest. Bilinear on a land-cover code invents classes that do not
+# exist.
 LAYERS = {
     "elevation_m": {
         "kind": "raster",
@@ -155,10 +154,10 @@ def mosaics(files: list[Path], grid: dict):
     Warping tile-by-tile and filling gaps afterwards leaves a nodata seam
     along tile joins, because a destination cell straddling the join samples
     outside both tiles. A seam through the DEM would read as a barrier in the
-    L2 cost-distance, so tiles are merged *before* the warp instead.
+    L2 cost-distance, so the tiles are merged before the warp.
 
-    The crop keeps memory bounded: a continent-wide source is never read whole,
-    only the AOI window plus a margin for the resampling kernel.
+    The crop bounds memory: it reads the AOI window plus a margin for the
+    resampling kernel, never the whole continent-wide source.
     """
     import rasterio
     from rasterio.merge import merge
@@ -227,8 +226,8 @@ def ingest_raster(layer: str, files: list[Path], out: Path, aoi: str) -> None:
                 dst_nodata=nodata,
                 resampling=resampling,
             )
-            # Groups fill only what earlier ones left empty, so their order
-            # cannot change the result.
+            # Each group fills only what earlier ones left empty, so group
+            # order cannot change the result.
             gap = np.isnan(dest) if np.isnan(nodata) else dest == nodata
             dest = np.where(gap, scratch, dest)
         bands.append(dest)
@@ -276,8 +275,8 @@ def ingest_vector(layer: str, files: list[Path], out: Path, aoi: str) -> int:
     # pages, so the bytes drift run to run. Start from a fresh file.
     out.unlink(missing_ok=True)
     if not frames:
-        # An empty layer is a real answer (nothing of this kind in the AOI);
-        # write it so downstream stages find a file with the right schema.
+        # No features of this kind in the AOI is a valid result. Write the
+        # file anyway so downstream stages find the right schema.
         gpd.GeoDataFrame(geometry=[], crs=CRS).to_file(out, driver="GPKG")
         return 0
     merged = pd.concat(frames, ignore_index=True)
