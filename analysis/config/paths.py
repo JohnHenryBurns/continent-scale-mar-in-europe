@@ -11,10 +11,13 @@ Layout per AOI::
     data/outputs/<aoi>_candidates.geojson  committed
     data/outputs/quicklooks/<aoi>_*.png    committed
 """
+import os
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA = REPO / "data"
+# MAR_DATA_ROOT redirects the whole data tree, so a stage can be run against
+# fixtures without touching the real one. Unset in normal use.
+DATA = Path(os.environ.get("MAR_DATA_ROOT") or (REPO / "data")).resolve()
 RAW = DATA / "raw"
 INTERIM = DATA / "interim"
 OUTPUTS = DATA / "outputs"
@@ -23,6 +26,15 @@ QUICKLOOKS = OUTPUTS / "quicklooks"
 # The combined weighted-overlay raster (06_combine.py writes it, the recall
 # gate reads it). Dimensionless 0-1, hence the "0to1" unit tag.
 SUITABILITY_BASENAME = "suitability_score_0to1.tif"
+
+
+def rel(path: Path) -> str:
+    """Repo-relative path for printing; absolute when it lies outside the repo
+    (which it does when MAR_DATA_ROOT points elsewhere)."""
+    try:
+        return str(Path(path).resolve().relative_to(REPO))
+    except ValueError:
+        return str(path)
 
 
 def interim_dir(aoi: str) -> Path:
@@ -47,17 +59,20 @@ def quicklook(aoi: str, name: str) -> Path:
 
 
 def owning_aoi(tif: Path, aoi_names) -> str | None:
-    """Which AOI a raster under data/outputs belongs to, or None if unclear.
+    """Which AOI a raster belongs to, or None if unclear.
 
-    Recognised: ``data/outputs/<aoi>/...`` and ``data/outputs/<aoi>_<name>.tif``.
+    Recognised under data/outputs and data/interim alike:
+    ``<root>/<aoi>/...`` and ``<root>/<aoi>_<name>.tif``.
     """
-    try:
-        rel = tif.resolve().relative_to(OUTPUTS)
-    except ValueError:
-        return None
-    if len(rel.parts) > 1 and rel.parts[0] in aoi_names:
-        return rel.parts[0]
-    for name in sorted(aoi_names):
-        if rel.name.startswith(f"{name}_"):
-            return name
+    resolved = Path(tif).resolve()
+    for root in (OUTPUTS, INTERIM):
+        try:
+            rel = resolved.relative_to(root)
+        except ValueError:
+            continue
+        if len(rel.parts) > 1 and rel.parts[0] in aoi_names:
+            return rel.parts[0]
+        for name in sorted(aoi_names):
+            if rel.name.startswith(f"{name}_"):
+                return name
     return None

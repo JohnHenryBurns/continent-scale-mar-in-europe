@@ -64,14 +64,18 @@ def main(aoi: str) -> int:
     known = set(aoi_names())
     grid_for(aoi)  # validates the active AOI definition itself
 
-    tifs = sorted(paths.OUTPUTS.rglob("*.tif"))  # sorted: determinism
+    # Interim rasters are gated too: 01_ingest.py snaps to the grid, and an
+    # ingest that drifts poisons every stage downstream of it.
+    roots = [r for r in (paths.OUTPUTS, paths.INTERIM) if r.is_dir()]
+    tifs = sorted({p for r in roots for p in r.rglob("*.tif")})  # sorted: determinism
     if not tifs:
-        print(f"  no rasters in {paths.OUTPUTS.relative_to(paths.REPO)} yet - skipped")
+        print(f"  no rasters in {paths.rel(paths.OUTPUTS)} or "
+              f"{paths.rel(paths.INTERIM)} yet - skipped")
         return 0
 
     failures = 0
     for tif in tifs:
-        rel = tif.relative_to(paths.REPO)
+        rel = paths.rel(tif)
         owner = paths.owning_aoi(tif, known)
         note = ""
         if owner is None:
