@@ -14,7 +14,14 @@ AOIS = {
     # maps exist -> strongest validation story for pipeline bring-up).
     "dti": {
         "resolution_m": 500,
-        "bounds": (5_030_000, 2_640_000, 5_210_000, 2_880_000),
+        # Covers the Duna-Tisza koze (approx. 18.6-20.4E, 45.85-47.65N) plus a
+        # margin, so both bounding rivers are inside the box: L2 conveyance
+        # source points sit on the Danube (west) and the Tisza (east), and an
+        # AOI that excludes them has no intake to route water from. Derived by
+        # projecting a densified lat/lon envelope to EPSG:3035 and rounding
+        # outward to 5 km; a lat/lon box is a curved quadrilateral in LAEA, so
+        # the corners alone would clip the edges.
+        "bounds": (4_965_000, 2_560_000, 5_130_000, 2_785_000),
         "basin_note": "Duna-Tisza koze, Hungary; clip via HydroBASINS lev06",
     },
     # Milestone 2: Po plain (canal network as existing conveyance).
