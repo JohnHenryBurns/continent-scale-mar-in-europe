@@ -63,7 +63,7 @@ def score_sites(raster: Path, sites: list[dict]) -> list[dict]:
                 s["problem"] = "lands on a nodata cell"
                 continue
             v = float(band[row, col])
-            # Strict "<" -> ties count against the site: the stricter reading.
+            # Strict "<", so ties count against the site.
             s["score"] = v
             s["percentile"] = 100.0 * np.count_nonzero(valid < v) / n_valid
             s["problem"] = None

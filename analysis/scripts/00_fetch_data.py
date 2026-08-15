@@ -16,11 +16,10 @@ Three kinds of source:
 Exit code is 0 only when every source required by the pipeline is present, so
 this doubles as the pre-flight check for 01_ingest.py.
 
-NOTE ON EGRESS: this container reaches package registries only; the data hosts
-below are refused by the egress proxy (403 on CONNECT). That is a policy
-denial, not a bug — the script reports the blocked host and stops rather than
-retrying. Run --download where egress is open, or fetch manually and drop the
-files in data/raw/<key>/.
+NOTE ON EGRESS: this container reaches package registries only. The egress
+proxy refuses the data hosts below by policy (403 on CONNECT), so the script
+reports the blocked host and stops without retrying. Run --download where
+egress is open, or fetch the files manually into data/raw/<key>/.
 """
 import argparse
 import hashlib
@@ -40,7 +39,7 @@ from config.grid import aoi_names  # noqa: E402
 # looks for, so keep the two in step.
 #
 # URLs could not be checked from this container (egress policy). `landing` is
-# the stable, citable entry point and is what to trust if a `url` 404s.
+# the stable, citable entry point; trust it if a `url` 404s.
 SOURCES = {
     "hydrosheds_dem": {
         "kind": "scriptable",
