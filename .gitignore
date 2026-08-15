@@ -1,0 +1,7 @@
+data/raw/
+data/interim/
+data/outputs/**/*.tif
+*.pyc
+__pycache__/
+.venv/
+shot_*.png

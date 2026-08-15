@@ -1,0 +1,8 @@
+name,lat,lon,aoi,type,note
+Hessisches Ried infiltration (WHR),49.75,8.50,rhine,operating,Treated Rhine water infiltration since 1989; 35 Mm3 in 2022
+Amsterdam Waterleidingduinen,52.34,4.55,rhine_delta,operating,Rhine-fed dune infiltration since 1950s; ~90 Mm3/yr production
+Crepieux-Charmy (Lyon),45.80,4.93,rhone,operating,375 ha wellfield; 12 infiltration basins on Rhone alluvium
+Veneto FIA (high Venetian plain),45.72,11.62,veneto,operating,Forested infiltration areas; ~1 Mm3/ha/yr
+Lomellina rice belt winter flooding,45.17,8.79,po,studied,RISTEC Ag-MAR winter paddy flooding
+Kerekegyhaza (Danube-Tisza interfluve),46.93,19.48,dti,studied,DEEPWATER-CE / ELTE MAR studies; depleted ridge region
+Lake Kondor GDE site (DTI),46.90,19.40,dti,studied,MAR-for-GDE replenishment modeling (Szabo et al. 2023)
