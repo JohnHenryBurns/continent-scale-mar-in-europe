@@ -111,12 +111,12 @@ def write_quicklook(raster: Path, sites: list[dict], aoi: str) -> Path | None:
 def main(aoi: str, require_raster: bool) -> int:
     grid_for(aoi)  # validates the AOI definition
     raster = paths.suitability_raster(aoi)
-    rel = raster.relative_to(paths.REPO)
+    rel = paths.rel(raster)
 
     sites = load_sites(aoi)
     if not sites:
         print(f"  no validation sites tagged aoi={aoi} in "
-              f"{SITES_CSV.relative_to(paths.REPO)} - nothing to check")
+              f"{paths.rel(SITES_CSV)} - nothing to check")
         return 1 if require_raster else 0
 
     if not raster.exists():
@@ -141,7 +141,7 @@ def main(aoi: str, require_raster: bool) -> int:
 
     ql = write_quicklook(raster, sites, aoi)
     if ql:
-        print(f"  quicklook: {ql.relative_to(paths.REPO)}")
+        print(f"  quicklook: {paths.rel(ql)}")
 
     print(f"  {len(sites) - failures}/{len(sites)} known sites in the top "
           f"{100 - RECALL_MIN_PERCENTILE:g}% of cells")
